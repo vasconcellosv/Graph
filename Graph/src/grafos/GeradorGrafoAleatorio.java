@@ -63,7 +63,7 @@ public class GeradorGrafoAleatorio {
 
     public void exportaGrafo(Graph<Object, DefaultEdge> g) throws IOException {
 
-        File arquivo = new File("..\\Grafos\\arquivos\\grafo.txt");
+        File arquivo = new File("..\\Graph\\arquivos\\grafo.txt");
         FileWriter file = new FileWriter(arquivo);
 
         Iterator<Object> iterador = new DepthFirstIterator<>(g);

@@ -1,5 +1,6 @@
 package grafos;
 
+import java.util.List;
 import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
@@ -14,6 +15,7 @@ public class Euleriano {
 
     public boolean ehEuleriano() {
 
+        List<Vertice> verticesImpares = null;
         Set<DefaultEdge> arestas;
         int contaGrau = 0;
         boolean euleriano = true;
@@ -24,12 +26,29 @@ public class Euleriano {
             for (DefaultEdge aresta : arestas) {
                 contaGrau++;
             }
-            if (contaGrau % 2 != 0) {
-                euleriano = false;
+            if (contaGrau % 2 != 0 && contaGrau != 0) {
+                verticesImpares.add(t);
             }
             contaGrau = 0;
         }
+        if(verticesImpares.size() !=2 || verticesImpares.size() != 0){
+            euleriano = false;
+        }else{
+            if(g.getEdge(verticesImpares.get(0), verticesImpares.get(1)) == null){
+                euleriano = false;
+            }
+        }
+            
         return euleriano;
     }
-
+    
+    public Vertice escolheRaiz() {
+        for (Object v : g.vertexSet()) {
+            Vertice t = (Vertice) v;
+            if (t.getpE() == 0) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

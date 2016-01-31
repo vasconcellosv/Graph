@@ -14,6 +14,12 @@ import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 public class LeitorGrafo {
+    
+    Graph<Object, DefaultEdge> g;
+    
+    public Graph<Object, DefaultEdge> grafoLido(){
+        return this.g;
+    }
 
     public Graph<Object, DefaultEdge> LeGrafo() throws FileNotFoundException {
         int origem;
@@ -23,7 +29,7 @@ public class LeitorGrafo {
         
         Graph<Object, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
         
-        File arquivo = new File("..\\Grafos\\arquivos\\grafo.txt");
+        File arquivo = new File("..\\Graph\\arquivos\\grafo.txt");
         Scanner file = new Scanner(arquivo);
         
         while(file.hasNextInt()){
@@ -44,7 +50,7 @@ public class LeitorGrafo {
             
             g.addEdge(buscaVertice(g, origem), buscaVertice(g, destino));
         }
-        
+        this.g = g;
         return g;
     }
     
