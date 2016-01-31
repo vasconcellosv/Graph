@@ -14,5 +14,6 @@ public class Grafos {
         
         BuscaEmProfundidade busca = new BuscaEmProfundidade(l.grafoLido());
         busca.bep();
+        busca.circuitoEuleriano();
     }    
 }

@@ -1,6 +1,7 @@
 package grafos;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -16,14 +17,16 @@ public class BuscaEmProfundidade {
     boolean biPartido = true;
 
     Graph<Object, DefaultEdge> g;
-    List<DefaultEdge> arvoreProfundidade = new ArrayList<DefaultEdge>();
+    Vertice raiz = null;
+    
+    ArrayList<List<DefaultEdge>> ArvoreProfundidade = new ArrayList<List<DefaultEdge>>();
+    List<DefaultEdge> tempArvoreProfundidade = new ArrayList<DefaultEdge>();
     List<DefaultEdge> arestaDeRetorno = new ArrayList<DefaultEdge>();
     List<Integer> profundidadeSaida = new ArrayList<Integer>();
     List<Stack<DefaultEdge>> blocos = new ArrayList<Stack<DefaultEdge>>();
     List<Vertice> articulacoes = new ArrayList<Vertice>();
     List<DefaultEdge> pontes = new ArrayList<DefaultEdge>();
-    List<List<Vertice>> componentesConexas = new ArrayList<List<Vertice>>();
-
+    //List<List<Vertice>> componentesConexas = new ArrayList<List<Vertice>>();
     Stack<DefaultEdge> tempBloco = new Stack<DefaultEdge>();
 
     public BuscaEmProfundidade(Graph<Object, DefaultEdge> g) {
@@ -33,8 +36,11 @@ public class BuscaEmProfundidade {
     public void bep() {
         while (temPeZero(g)) {
             nmComponentesConexas++;
-            busca(escolheRaiz());
+            raiz = escolheRaizParaIniciar();
+            busca(raiz);
             profundidadeSaida.add(maiorPS());
+            ArvoreProfundidade.add(tempArvoreProfundidade);
+            tempArvoreProfundidade = new ArrayList<DefaultEdge>();
         }
 
     }
@@ -46,11 +52,11 @@ public class BuscaEmProfundidade {
 
         for (Vertice w : filhos(v)) {
             if (w.getpE() == 0) {
-                arvoreProfundidade.add(getAresta(v, w));
+                tempArvoreProfundidade.add(getAresta(v, w));
                 w.setPai(v);
                 busca(w);
                 if (w.getBack() >= v.getpE()) {
-                    if(!articulacoes.contains(v)){
+                    if(!articulacoes.contains(v) && ((!raiz.equals(v)) || filhosNaArvore(v).size() >= 2)){
                         articulacoes.add(v);
                     }
                     tempBloco.add(getAresta(v, w));
@@ -74,7 +80,7 @@ public class BuscaEmProfundidade {
         v.setpS(tempo);
     }
 
-    public void componentes() {
+    /*public void componentes() {
         List<Vertice> tempComponentes = null;
         if (profundidadeSaida.size() == 1) {
             Vertice temp = null;
@@ -106,7 +112,7 @@ public class BuscaEmProfundidade {
                 i++;
             }
         }
-    }
+    }*/
 
     public boolean temPeZero(Graph<Object, DefaultEdge> g) {
         for (Object v : g.vertexSet()) {
@@ -118,15 +124,23 @@ public class BuscaEmProfundidade {
         return false;
     }
 
+    public Vertice escolheRaizParaIniciar() {
+        for (Object v : g.vertexSet()) {
+            Vertice t = (Vertice) v;
+            if (t.getpE() == 0) {
+                return t;
+            }
+            //if(t.getId() == 4){
+            //    return t;
+            //}
+        }
+        return null;
+    }
+    
     public Vertice escolheRaiz() {
         for (Object v : g.vertexSet()) {
             Vertice t = (Vertice) v;
-            //if (t.getpE() == 0) {
-            //    return t;
-            //}
-            if(t.getId() == 4){
                 return t;
-            }
         }
         return null;
     }
@@ -137,6 +151,20 @@ public class BuscaEmProfundidade {
         Set<DefaultEdge> arestas = g.edgesOf(v);
 
         for (DefaultEdge aresta : arestas) {
+            if (g.getEdgeSource(aresta).equals(v)) {
+                list.add((Vertice) g.getEdgeTarget(aresta));
+            } else if (g.getEdgeTarget(aresta).equals(v)) {
+                list.add((Vertice) g.getEdgeSource(aresta));
+            }
+        }
+        return list;
+    }
+    
+    private List<Vertice> filhosNaArvore(Vertice v) {
+
+        List<Vertice> list = new ArrayList<>();
+
+        for (DefaultEdge aresta : tempArvoreProfundidade) {
             if (g.getEdgeSource(aresta).equals(v)) {
                 list.add((Vertice) g.getEdgeTarget(aresta));
             } else if (g.getEdgeTarget(aresta).equals(v)) {
@@ -175,11 +203,12 @@ public class BuscaEmProfundidade {
         return maior;
     }
 
-    private List<DefaultEdge> circuitoEuleriano() {
+    public List<DefaultEdge> circuitoEuleriano() {
 
-        List<DefaultEdge> circuito = null;
-        List<DefaultEdge> visitadas = null;
-        Queue<DefaultEdge> arestas = null;
+        List<DefaultEdge> circuito = new ArrayList<DefaultEdge>();
+        List<DefaultEdge> visitadas = new ArrayList<DefaultEdge>();
+        Queue<DefaultEdge> arestas = new LinkedList<DefaultEdge>();
+        boolean sai = true;
 
         Euleriano euleriano = new Euleriano(g);
         if (euleriano.ehEuleriano()) {
@@ -187,6 +216,7 @@ public class BuscaEmProfundidade {
             Vertice v = escolheRaiz();
 
             while (!circuito.containsAll(g.edgeSet())) {
+                
                 //Primeiro pegas as arestas que não são pontes
                 for (DefaultEdge aresta : g.edgesOf(v)) {
                     if (!pontes.contains(aresta)) {
@@ -200,7 +230,17 @@ public class BuscaEmProfundidade {
                     }
                 }
 
-                DefaultEdge aresta = arestas.poll();
+                DefaultEdge aresta = new DefaultEdge();
+                
+                while (!arestas.isEmpty() && sai) {
+                    aresta = arestas.poll();
+                    
+                    if(!visitadas.contains(aresta) ){
+                        sai = false;
+                    }
+                }
+                sai = true;
+                
                 if (!visitadas.contains(aresta)) {
                     visitadas.add(aresta);
                     circuito.add(aresta);
@@ -209,15 +249,12 @@ public class BuscaEmProfundidade {
                     } else {
                         v = (Vertice) g.getEdgeSource(aresta);
                     }
-                }
-                while (!arestas.isEmpty() && !visitadas.contains(aresta)) {
-                    aresta = arestas.poll();
+                    arestas.clear();
                 }
             }
 
         }
-
-        return null;
+        return circuito;
     }
 
 }
