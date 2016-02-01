@@ -1,7 +1,7 @@
 package grafos;
 
 import java.io.IOException;
-import org.jgraph.*;
+import org.jgrapht.Graph;
 
 public class Grafos {
     
@@ -14,6 +14,6 @@ public class Grafos {
         
         BuscaEmProfundidade busca = new BuscaEmProfundidade(l.grafoLido());
         busca.bep();
-        busca.circuitoEuleriano();
+        busca.circuitoEuleriano();        
     }    
 }

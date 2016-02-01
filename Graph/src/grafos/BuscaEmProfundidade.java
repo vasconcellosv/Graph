@@ -232,13 +232,19 @@ public class BuscaEmProfundidade {
                 
                 //Primeiro pegas as arestas que não são pontes
                 for (DefaultEdge aresta : g.edgesOf(v)) {
-                    if (!pontes.contains(aresta)) {
+                    if (!pontes.contains(aresta) && !verticesVisitados.containsAll(filhos(outroVertice(aresta, v)))) {
                         arestas.add(aresta);
                     }
                 }
                 //Depois as que são pontes
                 for (DefaultEdge aresta : g.edgesOf(v)) {
-                    if (pontes.contains(aresta)) {
+                    if (pontes.contains(aresta) && !verticesVisitados.containsAll(filhos(outroVertice(aresta, v)))) {
+                        arestas.add(aresta);
+                    }
+                }
+                
+                for (DefaultEdge aresta : g.edgesOf(v)) {
+                    if (verticesVisitados.containsAll(filhos(outroVertice(aresta, v)))) {
                         arestas.add(aresta);
                     }
                 }
@@ -248,7 +254,7 @@ public class BuscaEmProfundidade {
                 while (!arestas.isEmpty() && sai) {
                     aresta = arestas.poll();
                     
-                    if(!arestasVisitadas.contains(aresta) && !verticesVisitados.containsAll(filhos(outroVertice(aresta, v))) ){
+                    if(!arestasVisitadas.contains(aresta)){
                         sai = false;
                     }
                 }
