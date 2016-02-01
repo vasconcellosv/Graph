@@ -202,11 +202,23 @@ public class BuscaEmProfundidade {
         }
         return maior;
     }
+    
+    private Vertice outroVertice(DefaultEdge aresta, Vertice v){
+        
+            if (g.getEdgeSource(aresta).equals(v)) {
+                return((Vertice) g.getEdgeTarget(aresta));
+            } else if (g.getEdgeTarget(aresta).equals(v)) {
+                return((Vertice) g.getEdgeSource(aresta));
+            }
+
+        return null;
+    }
 
     public List<DefaultEdge> circuitoEuleriano() {
 
         List<DefaultEdge> circuito = new ArrayList<DefaultEdge>();
-        List<DefaultEdge> visitadas = new ArrayList<DefaultEdge>();
+        List<DefaultEdge> arestasVisitadas = new ArrayList<DefaultEdge>();
+        List<Vertice> verticesVisitados = new ArrayList<Vertice>();
         Queue<DefaultEdge> arestas = new LinkedList<DefaultEdge>();
         boolean sai = true;
 
@@ -214,6 +226,7 @@ public class BuscaEmProfundidade {
         if (euleriano.ehEuleriano()) {
 
             Vertice v = escolheRaiz();
+            verticesVisitados.add(v);
 
             while (!circuito.containsAll(g.edgeSet())) {
                 
@@ -235,20 +248,21 @@ public class BuscaEmProfundidade {
                 while (!arestas.isEmpty() && sai) {
                     aresta = arestas.poll();
                     
-                    if(!visitadas.contains(aresta) ){
+                    if(!arestasVisitadas.contains(aresta) && !verticesVisitados.containsAll(filhos(outroVertice(aresta, v))) ){
                         sai = false;
                     }
                 }
                 sai = true;
                 
-                if (!visitadas.contains(aresta)) {
-                    visitadas.add(aresta);
+                if (!arestasVisitadas.contains(aresta)) {
+                    arestasVisitadas.add(aresta);
                     circuito.add(aresta);
                     if (!g.getEdgeTarget(aresta).equals(v)) {
                         v = (Vertice) g.getEdgeTarget(aresta);
                     } else {
                         v = (Vertice) g.getEdgeSource(aresta);
                     }
+                    verticesVisitados.add(v);
                     arestas.clear();
                 }
             }
