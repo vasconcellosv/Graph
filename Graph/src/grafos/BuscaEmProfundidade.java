@@ -18,9 +18,13 @@ public class BuscaEmProfundidade {
 
     Graph<Object, DefaultEdge> g;
     Vertice raiz = null;
-    
+
+    List<DefaultEdge> circuito = new ArrayList<DefaultEdge>();
     ArrayList<List<DefaultEdge>> ArvoreProfundidade = new ArrayList<List<DefaultEdge>>();
+    List<Vertice> raizes = new ArrayList<Vertice>();
     List<DefaultEdge> tempArvoreProfundidade = new ArrayList<DefaultEdge>();
+    List<DefaultEdge> tempComponenteConexa = new ArrayList<DefaultEdge>();
+    ArrayList<List<DefaultEdge>> ComponenteConexa = new ArrayList<List<DefaultEdge>>();
     List<DefaultEdge> arestaDeRetorno = new ArrayList<DefaultEdge>();
     List<Integer> profundidadeSaida = new ArrayList<Integer>();
     List<Stack<DefaultEdge>> blocos = new ArrayList<Stack<DefaultEdge>>();
@@ -37,10 +41,13 @@ public class BuscaEmProfundidade {
         while (temPeZero(g)) {
             nmComponentesConexas++;
             raiz = escolheRaizParaIniciar();
+            raizes.add(raiz);
             busca(raiz);
             profundidadeSaida.add(maiorPS());
             ArvoreProfundidade.add(tempArvoreProfundidade);
+            ComponenteConexa.add(tempComponenteConexa);
             tempArvoreProfundidade = new ArrayList<DefaultEdge>();
+            tempComponenteConexa = new ArrayList<DefaultEdge>();
         }
 
     }
@@ -53,10 +60,11 @@ public class BuscaEmProfundidade {
         for (Vertice w : filhos(v)) {
             if (w.getpE() == 0) {
                 tempArvoreProfundidade.add(getAresta(v, w));
+                tempComponenteConexa.add(getAresta(v, w));
                 w.setPai(v);
                 busca(w);
                 if (w.getBack() >= v.getpE()) {
-                    if(!articulacoes.contains(v) && ((!raiz.equals(v)) || filhosNaArvore(v).size() >= 2)){
+                    if (!articulacoes.contains(v) && ((!raiz.equals(v)) || filhosNaArvore(v).size() >= 2)) {
                         articulacoes.add(v);
                     }
                     tempBloco.add(getAresta(v, w));
@@ -65,12 +73,13 @@ public class BuscaEmProfundidade {
                         pontes.add(getAresta(v, w));
                     }
                     tempBloco = new Stack<DefaultEdge>();
-                }else{
+                } else {
                     tempBloco.add(getAresta(v, w));
                 }
                 v.setBack(Math.min(v.getBack(), w.getBack()));
             } else if (w.getpS() == 0 && (!v.getPai().equals(w))) {
                 arestaDeRetorno.add(getAresta(v, w));
+                tempComponenteConexa.add(getAresta(v, w));
                 tempBloco.add(getAresta(v, w));
                 v.setBack(Math.min(v.getBack(), w.getpE()));
                 cicloImpar(v, w);
@@ -80,39 +89,90 @@ public class BuscaEmProfundidade {
         v.setpS(tempo);
     }
 
-    /*public void componentes() {
-        List<Vertice> tempComponentes = null;
-        if (profundidadeSaida.size() == 1) {
-            Vertice temp = null;
-            for (Object v : g.vertexSet()) {
-                temp = (Vertice) v;
-                tempComponentes.add(temp);
-            }
-        } else {
-            int i = 0;
-            Vertice temp = null;
-            for (Object v : g.vertexSet()) {
-                temp = (Vertice) v;
-                if (temp.getpE() < profundidadeSaida.get(i)) {
-                    tempComponentes.add(temp);
-                }
-            }
-            componentesConexas.add(tempComponentes);
-            tempComponentes.clear();
+    public void imprimeInformacoes() {
+        System.out.println("----------------------------------------- Informações sobre o Grafo -----------------------------------------");
 
-            while (i < profundidadeSaida.size()) {
-                for (Object v : g.vertexSet()) {
-                    temp = (Vertice) v;
-                    if (profundidadeSaida.get(i) < temp.getpE() && temp.getpE() < profundidadeSaida.get(i + 1)) {
-                        tempComponentes.add(temp);
-                    }
-                }
-                componentesConexas.add(tempComponentes);
-                tempComponentes.clear();
-                i++;
-            }
+        if (nmComponentesConexas == 1) {
+            System.out.println("O Grafo é Conexo.");
+        } else {
+            System.out.println("O Grafo não é conexo.");
         }
-    }*/
+
+        System.out.println("");
+
+        System.out.println("Número de Arvores da Floresta Geradora: " + nmComponentesConexas);
+        int i = 0;
+        for (List<DefaultEdge> componente : ArvoreProfundidade) {
+            System.out.print("Arvore : " + raizes.get(i).toString().replace("grafos.Vertice@", "") + " -> " + componente.toString().replace("grafos.Vertice@", ""));
+            i++;
+            System.out.println("");
+        }
+        System.out.println("");
+
+        System.out.println("");
+
+        if (arestaDeRetorno.size() > 0) {
+            System.out.println("Possui Cíclo.");
+        } else {
+            System.out.println("Não Possui Ciclo.");
+        }
+
+        System.out.println("");
+
+        if (biPartido) {
+            System.out.println("É BiPartido.");
+        } else {
+            System.out.println("Não é BiPartido.");
+        }
+
+        System.out.println("");
+
+        System.out.println("Número de Componentes Conexas: " + nmComponentesConexas);
+        i = 1;
+        for (List<DefaultEdge> componente : ComponenteConexa) {
+            System.out.print("Componente Conexa : " + i + " -> " + componente.toString().replace("grafos.Vertice@", ""));
+            i++;
+            System.out.println("");
+        }
+        System.out.println("");
+
+        System.out.println("");
+
+        System.out.println("Número de Pontes: " + pontes.size());
+        for (DefaultEdge ponte : pontes) {
+            System.out.print(ponte.toString().replace("grafos.Vertice@", ""));
+        }
+        System.out.println("");
+
+        System.out.println("");
+
+        System.out.println("Número de Articulações: " + articulacoes.size());
+        for (Vertice articulacao : articulacoes) {
+            System.out.println("Vertice: " + articulacao.getId());
+        }
+        System.out.println("");
+
+        System.out.println("");
+
+        System.out.println("Número de Blocos: " + blocos.size());
+        i = 1;
+        for (List<DefaultEdge> bloco : blocos) {
+            System.out.print("Bloco : " + i + " -> " + bloco.toString().replace("grafos.Vertice@", ""));
+            i++;
+            System.out.println("");
+        }
+        System.out.println("");
+        
+        System.out.println("");
+        
+        if(new Euleriano(g).ehEuleriano(nmComponentesConexas)){
+            System.out.println("É Euleriano.");
+            circuitoEuleriano();
+            System.out.println(circuito.toString().replace("grafos.Vertice@", ""));
+        }else{
+            System.out.println("Não é Euleriano.");
+        }
+    }
 
     public boolean temPeZero(Graph<Object, DefaultEdge> g) {
         for (Object v : g.vertexSet()) {
@@ -136,11 +196,11 @@ public class BuscaEmProfundidade {
         }
         return null;
     }
-    
+
     public Vertice escolheRaiz() {
         for (Object v : g.vertexSet()) {
             Vertice t = (Vertice) v;
-                return t;
+            return t;
         }
         return null;
     }
@@ -159,7 +219,7 @@ public class BuscaEmProfundidade {
         }
         return list;
     }
-    
+
     private List<Vertice> filhosNaArvore(Vertice v) {
 
         List<Vertice> list = new ArrayList<>();
@@ -202,34 +262,33 @@ public class BuscaEmProfundidade {
         }
         return maior;
     }
-    
-    private Vertice outroVertice(DefaultEdge aresta, Vertice v){
-        
-            if (g.getEdgeSource(aresta).equals(v)) {
-                return((Vertice) g.getEdgeTarget(aresta));
-            } else if (g.getEdgeTarget(aresta).equals(v)) {
-                return((Vertice) g.getEdgeSource(aresta));
-            }
+
+    private Vertice outroVertice(DefaultEdge aresta, Vertice v) {
+
+        if (g.getEdgeSource(aresta).equals(v)) {
+            return ((Vertice) g.getEdgeTarget(aresta));
+        } else if (g.getEdgeTarget(aresta).equals(v)) {
+            return ((Vertice) g.getEdgeSource(aresta));
+        }
 
         return null;
     }
 
     public List<DefaultEdge> circuitoEuleriano() {
 
-        List<DefaultEdge> circuito = new ArrayList<DefaultEdge>();
         List<DefaultEdge> arestasVisitadas = new ArrayList<DefaultEdge>();
         List<Vertice> verticesVisitados = new ArrayList<Vertice>();
         Queue<DefaultEdge> arestas = new LinkedList<DefaultEdge>();
         boolean sai = true;
 
         Euleriano euleriano = new Euleriano(g);
-        if (euleriano.ehEuleriano()) {
+        if (euleriano.ehEuleriano(nmComponentesConexas)) {
 
             Vertice v = escolheRaiz();
             verticesVisitados.add(v);
 
             while (!circuito.containsAll(g.edgeSet())) {
-                
+
                 //Primeiro pegas as arestas que não são pontes
                 for (DefaultEdge aresta : g.edgesOf(v)) {
                     if (!pontes.contains(aresta) && !verticesVisitados.containsAll(filhos(outroVertice(aresta, v)))) {
@@ -242,7 +301,7 @@ public class BuscaEmProfundidade {
                         arestas.add(aresta);
                     }
                 }
-                
+
                 for (DefaultEdge aresta : g.edgesOf(v)) {
                     if (verticesVisitados.containsAll(filhos(outroVertice(aresta, v)))) {
                         arestas.add(aresta);
@@ -250,16 +309,16 @@ public class BuscaEmProfundidade {
                 }
 
                 DefaultEdge aresta = new DefaultEdge();
-                
+
                 while (!arestas.isEmpty() && sai) {
                     aresta = arestas.poll();
-                    
-                    if(!arestasVisitadas.contains(aresta)){
+
+                    if (!arestasVisitadas.contains(aresta)) {
                         sai = false;
                     }
                 }
                 sai = true;
-                
+
                 if (!arestasVisitadas.contains(aresta)) {
                     arestasVisitadas.add(aresta);
                     circuito.add(aresta);

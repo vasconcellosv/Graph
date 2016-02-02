@@ -15,35 +15,39 @@ public class Euleriano {
         this.g = g;
     }
 
-    public boolean ehEuleriano() {
+    public boolean ehEuleriano(int nmComponentesConexas) {
 
-        List<Vertice> verticesImpares = new ArrayList<Vertice>();
-        Set<DefaultEdge> arestas = null;
-        int contaGrau = 0;
-        boolean euleriano = true;
+        if (nmComponentesConexas == 1) {
 
-        for (Object v : g.vertexSet()) {
-            Vertice t = (Vertice) v;
-            arestas = g.edgesOf(t);
-            for (DefaultEdge aresta : arestas) {
-                contaGrau+=1;
+            List<Vertice> verticesImpares = new ArrayList<Vertice>();
+            Set<DefaultEdge> arestas = null;
+            int contaGrau = 0;
+            boolean euleriano = true;
+
+            for (Object v : g.vertexSet()) {
+                Vertice t = (Vertice) v;
+                arestas = g.edgesOf(t);
+                for (DefaultEdge aresta : arestas) {
+                    contaGrau += 1;
+                }
+                if (contaGrau % 2 != 0 && contaGrau != 0) {
+                    verticesImpares.add(t);
+                }
+                contaGrau = 0;
             }
-            if (contaGrau % 2 != 0 && contaGrau != 0) {
-                verticesImpares.add(t);
-            }
-            contaGrau = 0;
-        }
-        if(verticesImpares.size() != 2 && !verticesImpares.isEmpty()){
-            euleriano = false;
-        }else{
-            if(verticesImpares.size() == 2 && g.getEdge(verticesImpares.get(0), verticesImpares.get(1)) == null){
+            if (verticesImpares.size() != 2 && !verticesImpares.isEmpty()) {
                 euleriano = false;
+            } else {
+                if (verticesImpares.size() == 2 && g.getEdge(verticesImpares.get(0), verticesImpares.get(1)) == null) {
+                    euleriano = false;
+                }
             }
+
+            return euleriano;
         }
-            
-        return euleriano;
+        return false;
     }
-    
+
     public Vertice escolheRaiz() {
         for (Object v : g.vertexSet()) {
             Vertice t = (Vertice) v;
