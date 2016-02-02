@@ -38,7 +38,7 @@ public class Euleriano {
             if (verticesImpares.size() != 2 && !verticesImpares.isEmpty()) {
                 euleriano = false;
             } else {
-                if (verticesImpares.size() == 2 && g.getEdge(verticesImpares.get(0), verticesImpares.get(1)) == null) {
+                if (verticesImpares.size() == 2 /*&& g.getEdge(verticesImpares.get(0), verticesImpares.get(1)) == null*/) {
                     euleriano = false;
                 }
             }

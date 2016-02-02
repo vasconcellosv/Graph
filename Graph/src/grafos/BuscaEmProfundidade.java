@@ -38,13 +38,14 @@ public class BuscaEmProfundidade {
         this.g = g;
     }
 
+    // caso tenha mais de uma componente conexa
     public void bep() {
         while (temPeZero(g)) {
             nmComponentesConexas++;
             raiz = escolheRaizParaIniciar();
             raizes.add(raiz);
             busca(raiz);
-            profundidadeSaida.add(maiorPS());
+            //profundidadeSaida.add(maiorPS());
             ArvoreProfundidade.add(tempArvoreProfundidade);
             ComponenteConexa.add(tempComponenteConexa);
             tempArvoreProfundidade = new ArrayList<DefaultEdge>();
@@ -53,23 +54,29 @@ public class BuscaEmProfundidade {
 
     }
 
+    //Busca em profundidade
     public void busca(Vertice v) {
         tempo = tempo + 1;
         v.setpE(tempo);
         v.setBack(v.getpE());
 
         for (Vertice w : filhos(v)) {
+            //encontrou um vertice não explorado
             if (w.getpE() == 0) {
                 tempArvoreProfundidade.add(getAresta(v, w));
                 tempComponenteConexa.add(getAresta(v, w));
                 w.setPai(v);
                 busca(w);
+                //Se encontrou uma articulação
                 if (w.getBack() >= v.getpE()) {
+                    //se não está na lista de articulações e não é uma raiz ou tem 2 ou mais filhos
                     if (!articulacoes.contains(v) && ((!raiz.equals(v)) || filhosNaArvore(v).size() >= 2)) {
                         articulacoes.add(v);
                     }
                     tempBloco.add(getAresta(v, w));
+                    //Como encontrou uma articulação, ela encerra um bloco
                     blocos.add(tempBloco);
+                    //Se o bloco possui apenas uma aresta, é uma ponte
                     if (tempBloco.size() == 1) {
                         pontes.add(getAresta(v, w));
                     }
@@ -78,12 +85,15 @@ public class BuscaEmProfundidade {
                     tempBloco.add(getAresta(v, w));
                 }
                 v.setBack(Math.min(v.getBack(), w.getBack()));
+                //Se pe != 0 e ps = 0 e w não é pai de v, encontrou uma resta de retorno
             } else if (w.getpS() == 0 && (!v.getPai().equals(w))) {
                 arestaDeRetorno.add(getAresta(v, w));
+                //uma aresta de retorno fecha um ciclo
                 ciclos.add(ciclo(v, w));
                 tempComponenteConexa.add(getAresta(v, w));
                 tempBloco.add(getAresta(v, w));
                 v.setBack(Math.min(v.getBack(), w.getpE()));
+                //o grafo é bipartido se não possui ciclo impar, esse método verifica a paridade do ciclo e altera a variavel de controle
                 cicloImpar(v, w);
             }
         }
@@ -181,6 +191,37 @@ public class BuscaEmProfundidade {
             System.out.println("Não é Euleriano.");
         }
     }
+    
+    public void zeraGrafo(){
+        nmComponentesConexas = 0;
+        tempo = 0;
+
+        biPartido = true;
+
+        raiz = null;
+
+        ArvoreProfundidade.clear();
+        raizes.clear();
+        tempArvoreProfundidade.clear();
+        tempComponenteConexa.clear();
+        ComponenteConexa.clear();
+        ciclos.clear();
+        arestaDeRetorno.clear();
+        profundidadeSaida.clear();
+        blocos.clear();
+        articulacoes.clear();
+        pontes.clear();
+        tempBloco.clear();
+                
+        for (Object temp : g.vertexSet()) {
+            Vertice v = (Vertice) temp;
+            v.setBack(0);
+            v.setPai(null);
+            v.setpE(0);
+            v.setpS(0);
+        }
+        
+    }
 
     public boolean temPeZero(Graph<Object, DefaultEdge> g) {
         for (Object v : g.vertexSet()) {
@@ -195,16 +236,17 @@ public class BuscaEmProfundidade {
     public Vertice escolheRaizParaIniciar() {
         for (Object v : g.vertexSet()) {
             Vertice t = (Vertice) v;
-            //if (t.getpE() == 0) {
-            //    return t;
-            //}
-            if(t.getId() == 4){
+            if (t.getpE() == 0) {
                 return t;
             }
+            //if(t.getId() == 0){
+            //    return t;
+            //}
         }
         return null;
     }
 
+    //escolhe uma raiz para Euleriano
     public Vertice escolheRaiz() {
         for (Object v : g.vertexSet()) {
             Vertice t = (Vertice) v;
@@ -228,6 +270,7 @@ public class BuscaEmProfundidade {
         return list;
     }
 
+    //filhos na arvore de profundidade
     private List<Vertice> filhosNaArvore(Vertice v) {
 
         List<Vertice> list = new ArrayList<>();
@@ -260,6 +303,7 @@ public class BuscaEmProfundidade {
         }
     }
     
+    //retorno o ciclo entre V e W
     private List<DefaultEdge> ciclo(Vertice v, Vertice w){
         
         List<DefaultEdge> lista = new ArrayList<DefaultEdge>();
@@ -276,7 +320,7 @@ public class BuscaEmProfundidade {
         return lista;
     }
 
-    private Integer maiorPS() {
+    /*private Integer maiorPS() {
         int maior = 0;
         for (Object v : g.vertexSet()) {
             Vertice t = (Vertice) v;
@@ -285,7 +329,7 @@ public class BuscaEmProfundidade {
             }
         }
         return maior;
-    }
+    }*/
 
     private Vertice outroVertice(DefaultEdge aresta, Vertice v) {
 
@@ -300,6 +344,7 @@ public class BuscaEmProfundidade {
 
     public List<DefaultEdge> circuitoEuleriano() {
 
+        DefaultEdge temp = new DefaultEdge();
         List<DefaultEdge> arestasVisitadas = new ArrayList<DefaultEdge>();
         List<Vertice> verticesVisitados = new ArrayList<Vertice>();
         Queue<DefaultEdge> arestas = new LinkedList<DefaultEdge>();
@@ -319,6 +364,10 @@ public class BuscaEmProfundidade {
                         arestas.add(aresta);
                     }
                 }
+                temp = arestas.poll();
+                if(temp != null){
+                    arestas.add(temp);
+                }
                 //Depois as que são pontes
                 for (DefaultEdge aresta : g.edgesOf(v)) {
                     if (pontes.contains(aresta) && !verticesVisitados.containsAll(filhos(outroVertice(aresta, v)))) {
@@ -335,6 +384,7 @@ public class BuscaEmProfundidade {
                 DefaultEdge aresta = new DefaultEdge();
 
                 while (!arestas.isEmpty() && sai) {
+                    
                     aresta = arestas.poll();
 
                     if (!arestasVisitadas.contains(aresta)) {
@@ -345,6 +395,10 @@ public class BuscaEmProfundidade {
 
                 if (!arestasVisitadas.contains(aresta)) {
                     arestasVisitadas.add(aresta);
+                    g.removeEdge(aresta);
+                    //imprimeInformacoes();
+                    zeraGrafo();
+                    bep();
                     circuito.add(aresta);
                     if (!g.getEdgeTarget(aresta).equals(v)) {
                         v = (Vertice) g.getEdgeTarget(aresta);
