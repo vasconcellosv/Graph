@@ -25,6 +25,7 @@ public class BuscaEmProfundidade {
     List<DefaultEdge> tempArvoreProfundidade = new ArrayList<DefaultEdge>();
     List<DefaultEdge> tempComponenteConexa = new ArrayList<DefaultEdge>();
     ArrayList<List<DefaultEdge>> ComponenteConexa = new ArrayList<List<DefaultEdge>>();
+    ArrayList<List<DefaultEdge>> ciclos = new ArrayList<List<DefaultEdge>>();
     List<DefaultEdge> arestaDeRetorno = new ArrayList<DefaultEdge>();
     List<Integer> profundidadeSaida = new ArrayList<Integer>();
     List<Stack<DefaultEdge>> blocos = new ArrayList<Stack<DefaultEdge>>();
@@ -79,6 +80,7 @@ public class BuscaEmProfundidade {
                 v.setBack(Math.min(v.getBack(), w.getBack()));
             } else if (w.getpS() == 0 && (!v.getPai().equals(w))) {
                 arestaDeRetorno.add(getAresta(v, w));
+                ciclos.add(ciclo(v, w));
                 tempComponenteConexa.add(getAresta(v, w));
                 tempBloco.add(getAresta(v, w));
                 v.setBack(Math.min(v.getBack(), w.getpE()));
@@ -113,6 +115,12 @@ public class BuscaEmProfundidade {
 
         if (arestaDeRetorno.size() > 0) {
             System.out.println("Possui Cíclo.");
+            i = 1;
+            for (List<DefaultEdge> ciclo : ciclos) {
+                System.out.print("Ciclo : " + i + " -> " + ciclo.toString().replace("grafos.Vertice@", ""));
+            i++;
+            System.out.println("");
+            }
         } else {
             System.out.println("Não Possui Ciclo.");
         }
@@ -187,12 +195,12 @@ public class BuscaEmProfundidade {
     public Vertice escolheRaizParaIniciar() {
         for (Object v : g.vertexSet()) {
             Vertice t = (Vertice) v;
-            if (t.getpE() == 0) {
-                return t;
-            }
-            //if(t.getId() == 4){
+            //if (t.getpE() == 0) {
             //    return t;
             //}
+            if(t.getId() == 4){
+                return t;
+            }
         }
         return null;
     }
@@ -250,6 +258,22 @@ public class BuscaEmProfundidade {
         if (count % 2 != 0) {
             biPartido = false;
         }
+    }
+    
+    private List<DefaultEdge> ciclo(Vertice v, Vertice w){
+        
+        List<DefaultEdge> lista = new ArrayList<DefaultEdge>();
+        int count = 1;
+        Vertice temp = v;
+        lista.add(getAresta(temp, w));
+        
+        while (!temp.getPai().equals(w)) {
+            lista.add(getAresta(temp, temp.getPai()));
+            temp = temp.getPai();
+        }
+        lista.add(getAresta(temp, temp.getPai()));
+        
+        return lista;
     }
 
     private Integer maiorPS() {
